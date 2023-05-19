@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using RoboLlama.Infrastructure;
 using RoboLlama.Models;
 using RoboLlama.Services;
@@ -15,11 +16,9 @@ public class Bot : BackgroundService
     private readonly List<ChannelStatus> _channelsToJoin;
 
     private string? currentNick = null;
-    private bool pluginsLoaded = false;
     private readonly CancellationTokenSource _tokenSource = new();
 
-
-    Dictionary<string, Func<string, IEnumerable<string>>>? triggers;
+    Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
 
     public Bot(
         IOptionsMonitor<ServerConfig> _monitor,
@@ -61,7 +60,11 @@ public class Bot : BackgroundService
                 }
 
                 string? inputLine = await reader.ReadLineAsync(stoppingToken);
-                if (string.IsNullOrWhiteSpace(inputLine)) continue;
+                if (string.IsNullOrWhiteSpace(inputLine))
+                {
+                    throw new Exception($"Unexpected Line in inputLine: {inputLine}");
+                }
+
                 BotConsole.WriteLine($"< {inputLine}");  // Print raw IRC data received
 
                 if (inputLine.Contains("PING"))
@@ -81,6 +84,7 @@ public class Bot : BackgroundService
                                 {
                                     await writer.SendRawLineAsync($"JOIN {channelStatus.Name}");
                                 }
+                                await writer.SendRawLineAsync($"PRIVMSG NickServ :IDENTIFY {_config.NickPass}");
                             }
                             break;
                         case "366": // end of names list, ive succesfully joined a channel
@@ -91,7 +95,7 @@ public class Bot : BackgroundService
                                 {
                                     chanJoined.Status = "joined";
                                 }
-                                if (_channelsToJoin.All(x => x.Status == "joined") && !pluginsLoaded)
+                                if (_channelsToJoin.All(x => x.Status == "joined"))
                                 {
                                     // start running plugins
                                     EnablePlugins(writer);
@@ -168,7 +172,6 @@ public class Bot : BackgroundService
                                             }
                                     }
                                 }
-                                if (!pluginsLoaded || triggers is null) break;
                                 foreach (KeyValuePair<string, Func<string, IEnumerable<string>>> trigger in triggers)
                                 {
                                     if (!userMessage.Contains(trigger.Key, StringComparison.OrdinalIgnoreCase)) continue;
@@ -211,27 +214,21 @@ public class Bot : BackgroundService
 
     private void EnablePlugins(StreamWriter writer)
     {
-        pluginsLoaded = false;
-        BotConsole.WriteErrorLine("Reloading Plugins");
-        _tokenSource.Cancel();
-        _tokenSource.TryReset();
-        try
+        BotConsole.WriteSystemLine("Reloading Plugins");
+        _pluginService.LoadPlugins(_config.PluginFolder);
+        if (_tokenSource is not null)
         {
-            _pluginService.LoadPlugins(_config.PluginFolder);
-            triggers = _pluginService.GetTriggerWords();
+            _tokenSource.Cancel();
+            _tokenSource.TryReset();
             _ = Anouncer(writer, _tokenSource.Token);
-            pluginsLoaded = true;
         }
-        catch
-        {
-            pluginsLoaded = false;
-        }
+        triggers = _pluginService.GetTriggerWords();
     }
 
     private async Task Anouncer(StreamWriter writer, CancellationToken stoppingToken)
     {
         await Task.Delay(20 * 1000);
-        while (pluginsLoaded)
+        while (!stoppingToken.IsCancellationRequested)
         {
             foreach (string line in _pluginService.GetReports())
             {
@@ -246,7 +243,6 @@ public class Bot : BackgroundService
             }
             catch
             {
-                pluginsLoaded = false;
             }
         }
     }
