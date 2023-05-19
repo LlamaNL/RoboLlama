@@ -8,14 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.YouTube.v3" Version="1.60.0.3043" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NewPlugins\GiantBombRoboLlamaPlugin\GiantBombRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\MastodonRoboLlamaPlugin\MastodonRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\OglafRoboLlamaPlugin\OglafRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\SpotifyRoboLlamaPlugin\SpotifyRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\TwitchRoboLlamaPlugin\TwitchRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\TwitterRoboLlamaPlugin\TwitterRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\UrbanDictionaryRoboLlamaPlugin\UrbanDictionaryRoboLlamaPlugin.csproj" />
+    <ProjectReference Include="..\NewPlugins\YoutubRoboLlamaPlugin\YoutubeRoboLlamaPlugin.csproj" />
     <ProjectReference Include="..\RoboLlamaLibrary\RoboLlamaLibrary.csproj" />
     <ProjectReference Include="..\RoboLlamaRSSReader\RoboLlamaRSSReader.csproj" />
   </ItemGroup>
