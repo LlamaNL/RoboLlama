@@ -14,9 +14,10 @@ public class Bot : BackgroundService
     private readonly IrcConnectionPolicy _connectionPolicy = new(20, 10);
     private readonly List<ChannelStatus> _channelsToJoin;
 
-    private Timer? reportTimer = null;
     private string? currentNick = null;
     private bool pluginsLoaded = false;
+    private readonly CancellationTokenSource _tokenSource = new();
+
 
     Dictionary<string, Func<string, IEnumerable<string>>>? triggers;
 
@@ -35,12 +36,6 @@ public class Bot : BackgroundService
         {
             await _connectionPolicy.ConnectWithRetriesAsync(async () => await RunBot(stoppingToken));
         }
-    }
-
-    public override Task StopAsync(CancellationToken cancellationToken)
-    {
-        reportTimer?.Dispose();
-        return base.StopAsync(cancellationToken);
     }
 
     private async Task RunBot(CancellationToken stoppingToken)
@@ -161,7 +156,7 @@ public class Bot : BackgroundService
                                     // Insert Admin Commands here
                                     switch (command)
                                     {
-                                        case "!reloadplugings":
+                                        case "!reloadplugins":
                                             {
                                                 // run the plugin init again
                                                 EnablePlugins(writer);
@@ -217,26 +212,42 @@ public class Bot : BackgroundService
     private void EnablePlugins(StreamWriter writer)
     {
         pluginsLoaded = false;
+        BotConsole.WriteErrorLine("Reloading Plugins");
+        _tokenSource.Cancel();
+        _tokenSource.TryReset();
         try
         {
             _pluginService.LoadPlugins(_config.PluginFolder);
             triggers = _pluginService.GetTriggerWords();
-            reportTimer?.Dispose();
-            reportTimer = new(async _ =>
-            {
-                foreach (string line in _pluginService.GetReports())
-                {
-                    foreach (ChannelStatus? channelStatus in _channelsToJoin.Where(x => x.Status == "joined"))
-                    {
-                        await writer.SayToChannel(channelStatus.Name, line);
-                    }
-                }
-            }, null, 0, 1000 * 60 * 5);
+            _ = Anouncer(writer, _tokenSource.Token);
             pluginsLoaded = true;
         }
         catch
         {
             pluginsLoaded = false;
+        }
+    }
+
+    private async Task Anouncer(StreamWriter writer, CancellationToken stoppingToken)
+    {
+        await Task.Delay(20 * 1000);
+        while (pluginsLoaded)
+        {
+            foreach (string line in _pluginService.GetReports())
+            {
+                foreach (ChannelStatus? channelStatus in _channelsToJoin.Where(x => x.Status == "joined"))
+                {
+                    await writer.SayToChannel(channelStatus.Name, line);
+                }
+            }
+            try
+            {
+                await Task.Delay(1000 * 60 * 5, stoppingToken);
+            }
+            catch
+            {
+                pluginsLoaded = false;
+            }
         }
     }
 }
