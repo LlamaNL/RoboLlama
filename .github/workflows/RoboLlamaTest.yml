@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, Llama-Server]
+    runs-on: [self-hosted, LLAMA-SERVER]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
