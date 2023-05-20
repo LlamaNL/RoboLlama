@@ -7,27 +7,32 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebhookReceiver", "WebhookR
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoboLlama", "RoboLlama\RoboLlama.csproj", "{3C8F084D-EDAD-435F-B8AB-580608866CF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoboLlamaLibrary", "RoboLlamaLibrary\RoboLlamaLibrary.csproj", "{DBD8B067-841C-4CA1-92F1-82243653065E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoboLlamaLibrary", "RoboLlamaLibrary\RoboLlamaLibrary.csproj", "{DBD8B067-841C-4CA1-92F1-82243653065E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewPlugins", "NewPlugins", "{8F89743B-043D-49C0-A2C2-1F8F4A7924B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonRoboLlamaPlugin", "NewPlugins\MastodonRoboLlamaPlugin\MastodonRoboLlamaPlugin.csproj", "{7608001E-DC6E-4492-8623-0F85F271B4D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MastodonRoboLlamaPlugin", "NewPlugins\MastodonRoboLlamaPlugin\MastodonRoboLlamaPlugin.csproj", "{7608001E-DC6E-4492-8623-0F85F271B4D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitterRoboLlamaPlugin", "NewPlugins\TwitterRoboLlamaPlugin\TwitterRoboLlamaPlugin.csproj", "{33DDF30F-439D-4430-A4E6-61702E1F7E68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitterRoboLlamaPlugin", "NewPlugins\TwitterRoboLlamaPlugin\TwitterRoboLlamaPlugin.csproj", "{33DDF30F-439D-4430-A4E6-61702E1F7E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoboLlamaRSSReader", "RoboLlamaRSSReader\RoboLlamaRSSReader.csproj", "{19907064-44C1-47AE-8213-5357B1A40ABF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoboLlamaRSSReader", "RoboLlamaRSSReader\RoboLlamaRSSReader.csproj", "{19907064-44C1-47AE-8213-5357B1A40ABF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GiantBombRoboLlamaPlugin", "NewPlugins\GiantBombRoboLlamaPlugin\GiantBombRoboLlamaPlugin.csproj", "{0D600812-C67F-4B04-90DD-E7CDBAAF93CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantBombRoboLlamaPlugin", "NewPlugins\GiantBombRoboLlamaPlugin\GiantBombRoboLlamaPlugin.csproj", "{0D600812-C67F-4B04-90DD-E7CDBAAF93CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UrbanDictionaryRoboLlamaPlugin", "NewPlugins\UrbanDictionaryRoboLlamaPlugin\UrbanDictionaryRoboLlamaPlugin.csproj", "{8587CF79-C4BA-43F2-B828-654048D02478}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UrbanDictionaryRoboLlamaPlugin", "NewPlugins\UrbanDictionaryRoboLlamaPlugin\UrbanDictionaryRoboLlamaPlugin.csproj", "{8587CF79-C4BA-43F2-B828-654048D02478}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyRoboLlamaPlugin", "NewPlugins\SpotifyRoboLlamaPlugin\SpotifyRoboLlamaPlugin.csproj", "{7931EA17-40E4-4C61-B375-C86F5F839488}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyRoboLlamaPlugin", "NewPlugins\SpotifyRoboLlamaPlugin\SpotifyRoboLlamaPlugin.csproj", "{7931EA17-40E4-4C61-B375-C86F5F839488}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeRoboLlamaPlugin", "NewPlugins\YoutubRoboLlamaPlugin\YoutubeRoboLlamaPlugin.csproj", "{F16AE4A5-D614-4D58-908A-B9B316BF17B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YoutubeRoboLlamaPlugin", "NewPlugins\YoutubRoboLlamaPlugin\YoutubeRoboLlamaPlugin.csproj", "{F16AE4A5-D614-4D58-908A-B9B316BF17B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OglafRoboLlamaPlugin", "NewPlugins\OglafRoboLlamaPlugin\OglafRoboLlamaPlugin.csproj", "{F15B3981-60E9-44DE-B214-D6046E4B271E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OglafRoboLlamaPlugin", "NewPlugins\OglafRoboLlamaPlugin\OglafRoboLlamaPlugin.csproj", "{F15B3981-60E9-44DE-B214-D6046E4B271E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwitchRoboLlamaPlugin", "NewPlugins\TwitchRoboLlamaPlugin\TwitchRoboLlamaPlugin.csproj", "{3CF39F53-1E46-4008-AA03-228457592DF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwitchRoboLlamaPlugin", "NewPlugins\TwitchRoboLlamaPlugin\TwitchRoboLlamaPlugin.csproj", "{3CF39F53-1E46-4008-AA03-228457592DF8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E71FA99D-06EB-48F5-8E37-05FC3872F9EC}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\RoboLlama.yml = .github\workflows\RoboLlama.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
