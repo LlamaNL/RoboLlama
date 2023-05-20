@@ -17,8 +17,10 @@ public class Bot : BackgroundService
 
     private string? currentNick = null;
     private readonly CancellationTokenSource _tokenSource = new();
-
+    private string? pingMesssage = null;
     Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
+    private TcpClient irc;
+    private Timer pingTimer;
 
     public Bot(
         IOptionsMonitor<ServerConfig> _monitor,
@@ -41,33 +43,49 @@ public class Bot : BackgroundService
     {
         try
         {
-            using TcpClient irc = new();
+            irc = new();
+
+            // Get underlying socket
+            Socket socket = irc.Client;
+
+            // Set keep-alive
+            const bool enableKeepAlive = true;
+            const int keepAliveTime = 60000; // Send a packet after a minute of inactivity
+            const int keepAliveInterval = 60000; // Send a packet every minute once the keep-alive time has passed
+
+            // Convert the keep-alive settings to a byte array
+            byte[] keepAliveValues = new byte[12];
+            BitConverter.GetBytes(enableKeepAlive ? 1 : 0).CopyTo(keepAliveValues, 0);
+            BitConverter.GetBytes(keepAliveTime).CopyTo(keepAliveValues, 4);
+            BitConverter.GetBytes(keepAliveInterval).CopyTo(keepAliveValues, 8);
+
+            // Set the keep-alive settings on the underlying Socket
+            socket.IOControl(IOControlCode.KeepAliveValues, keepAliveValues, null);
             await irc.ConnectAsync(_config.ServerAddress, _config.ServerPort);
 
             using NetworkStream stream = irc.GetStream();
             using StreamReader reader = new(stream);
             using StreamWriter writer = new(stream) { NewLine = "\r\n", AutoFlush = true };
 
+            pingTimer = new Timer(async _ => await SendPingAsync(writer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+
             currentNick = _config.Nicks.GetNextItemInArray(currentNick);
             await writer.SendRawLineAsync($"NICK {currentNick}");
             await writer.SendRawLineAsync($"USER {_config.Owner} 0 * :{_config.Owner}");
 
-            while (!stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested && irc.Connected)
             {
-                if (!irc.Connected)
-                {
-                    throw new Exception("Lost connection to the IRC server");
-                }
-
                 string? inputLine = await reader.ReadLineAsync(stoppingToken);
                 if (string.IsNullOrWhiteSpace(inputLine))
                 {
                     throw new Exception($"Unexpected Line in inputLine: {inputLine}");
                 }
 
-                BotConsole.WriteLine($"< {inputLine}");  // Print raw IRC data received
-
-                if (inputLine.Contains("PING"))
+                if (!inputLine.Contains("PING") || !inputLine.Contains("PONG"))
+                {
+                    BotConsole.WriteLine($"< {inputLine}");  // Print raw IRC data received
+                }
+                if (inputLine.Contains("PING") && pingMesssage is null)
                 {
                     await writer.SendRawLineAsync(inputLine.Replace("PING", "PONG"));
                     continue;
@@ -230,19 +248,43 @@ public class Bot : BackgroundService
         await Task.Delay(20 * 1000);
         while (!stoppingToken.IsCancellationRequested)
         {
-            foreach (string line in _pluginService.GetReports())
-            {
-                foreach (ChannelStatus? channelStatus in _channelsToJoin.Where(x => x.Status == "joined"))
-                {
-                    await writer.SayToChannel(channelStatus.Name, line);
-                }
-            }
             try
             {
-                await Task.Delay(1000 * 60 * 5, stoppingToken);
+                foreach (string line in _pluginService.GetReports())
+                {
+                    foreach (ChannelStatus? channelStatus in _channelsToJoin.Where(x => x.Status == "joined"))
+                    {
+                        await writer.SayToChannel(channelStatus.Name, line);
+                    }
+                }
+                try
+                {
+                    await Task.Delay(1000 * 60 * 5, stoppingToken);
+                }
+                catch
+                {
+                }
             }
             catch
             {
+                irc.Close();
+            }
+        }
+    }
+
+    private async Task SendPingAsync(StreamWriter writer)
+    {
+        if (irc.Connected)
+        {
+            try
+            {
+                string pingData = "PING :RoboLlamaPing";
+                await writer.WriteLineAsync(pingData);
+                await writer.FlushAsync();
+            }
+            catch
+            {
+                irc.Close();
             }
         }
     }
