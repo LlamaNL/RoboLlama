@@ -1,0 +1,26 @@
+name: RoboLlamaTest
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: [self-hosted, Llama-Server]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Publish RoboLlama
+      run: dotnet publish RoboLlama --output C:\RoboLlamaTest --configuration Release
+    - name: Publish Plugins
+      run: |
+        find ./NewPlugins -name '*.csproj' -print0 | while IFS= read -r -d '' project; do
+          dotnet publish "$project" --output C:\RoboLlamaTest\Plugins --configuration Release
+        done
