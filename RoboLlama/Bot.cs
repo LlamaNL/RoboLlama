@@ -17,10 +17,9 @@ public class Bot : BackgroundService
 
     private string? currentNick = null;
     private CancellationTokenSource _tokenSource = new();
-    private string? pingMesssage = null;
     Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
-    private TcpClient irc;
-    private Timer pingTimer;
+    private TcpClient? irc;
+    private Timer? pingTimer;
 
     public Bot(
         IOptionsMonitor<ServerConfig> _monitor,
@@ -60,7 +59,9 @@ public class Bot : BackgroundService
             BitConverter.GetBytes(keepAliveInterval).CopyTo(keepAliveValues, 8);
 
             // Set the keep-alive settings on the underlying Socket
+#pragma warning disable CA1416 // Validate platform compatibility
             socket.IOControl(IOControlCode.KeepAliveValues, keepAliveValues, null);
+#pragma warning restore CA1416 // Validate platform compatibility
             await irc.ConnectAsync(_config.ServerAddress, _config.ServerPort);
 
             using NetworkStream stream = irc.GetStream();
@@ -81,11 +82,11 @@ public class Bot : BackgroundService
                     throw new Exception($"Unexpected Line in inputLine: {inputLine}");
                 }
 
-                if (!inputLine.Contains("PING") || !inputLine.Contains("PONG"))
+                if (!inputLine.Contains("PING") && !inputLine.Contains("PONG"))
                 {
                     BotConsole.WriteLine($"< {inputLine}");  // Print raw IRC data received
                 }
-                if (inputLine.Contains("PING") && pingMesssage is null)
+                if (inputLine.Contains("PING"))
                 {
                     await writer.SendRawLineAsync(inputLine.Replace("PING", "PONG"));
                     continue;
@@ -228,6 +229,10 @@ public class Bot : BackgroundService
             BotConsole.WriteErrorLine("Unexpected error: " + ex.Message);
             throw;
         }
+        finally
+        {
+            pingTimer?.Dispose();
+        }
     }
 
     private async void EnablePlugins(StreamWriter writer)
@@ -246,7 +251,7 @@ public class Bot : BackgroundService
 
     private async Task Anouncer(StreamWriter writer, CancellationToken stoppingToken)
     {
-        await Task.Delay(20 * 1000);
+        await Task.Delay(20 * 1000, CancellationToken.None);
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -268,18 +273,18 @@ public class Bot : BackgroundService
             }
             catch
             {
-                irc.Close();
+                irc?.Close();
             }
         }
     }
 
     private async Task SendPingAsync(StreamWriter writer)
     {
-        if (irc.Connected)
+        if (irc?.Connected == true)
         {
             try
             {
-                string pingData = "PING :RoboLlamaPing";
+                const string pingData = "PING :RoboLlamaPing";
                 await writer.WriteLineAsync(pingData);
                 await writer.FlushAsync();
             }
