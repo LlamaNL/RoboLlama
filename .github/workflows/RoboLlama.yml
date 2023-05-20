@@ -17,14 +17,11 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Backup appsettings files
+    - name: Backup JSON files
       shell: pwsh
       run: |
-        if (Test-Path -Path C:\RoboLlama\appsettings.json) {
-          Copy-Item -Path C:\RoboLlama\appsettings.json -Destination C:\RoboLlama\appsettings.json.bak -Force
-        }
-        if (Test-Path -Path C:\RoboLlama\appsettings.Development.json) {
-          Copy-Item -Path C:\RoboLlama\appsettings.Development.json -Destination C:\RoboLlama\appsettings.Development.json.bak -Force
+        Get-ChildItem -Path C:\RoboLlama -Filter *.json | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination "$($_.FullName).bak" -Force
         }
     - name: Stop RoboLlama service if it exists and is running
       shell: pwsh
@@ -35,14 +32,11 @@ jobs:
         }
     - name: Publish RoboLlama
       run: dotnet publish RoboLlama --output C:\RoboLlama --configuration Release
-    - name: Restore appsettings files
+    - name: Restore JSON files
       shell: pwsh
       run: |
-        if (Test-Path -Path C:\RoboLlama\appsettings.json.bak) {
-          Move-Item -Path C:\RoboLlama\appsettings.json.bak -Destination C:\RoboLlama\appsettings.json -Force
-        }
-        if (Test-Path -Path C:\RoboLlama\appsettings.Development.json.bak) {
-          Move-Item -Path C:\RoboLlama\appsettings.Development.json.bak -Destination C:\RoboLlama\appsettings.Development.json -Force
+        Get-ChildItem -Path C:\RoboLlama -Filter *.json.bak | ForEach-Object {
+          Move-Item -Path $_.FullName -Destination ($_.FullName -replace '.bak$', '') -Force
         }
     - name: Publish Plugins
       shell: pwsh
