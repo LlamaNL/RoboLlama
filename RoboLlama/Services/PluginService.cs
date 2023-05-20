@@ -79,7 +79,14 @@ public class PluginService : IPluginService
         foreach (object reporter in _reports)
         {
             IReportPlugin plugin = (reporter as IReportPlugin)!;
-            output.AddRange(plugin.GetLatestReports());
+            try
+            {
+                output.AddRange(plugin.GetLatestReports());
+            }
+            catch (Exception e)
+            {
+                BotConsole.WriteErrorLine($"Error Getting Reports from: {plugin.GetType().Name}\n{e.Message}");
+            }
         }
         return output;
     }

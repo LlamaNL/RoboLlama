@@ -31,7 +31,8 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet,
                 IrcColor.Black));
             sb.Append(" - ").Append(alert.Title.Replace("\n", "")).Append(" - ");
-            if (game != null) sb.Append(game).Append(" - LIVE");
+            if (game != null) sb.Append(game);
+            sb.Append(" - LIVE");
             output.Add(sb.ToString());
             alert.Announced = true;
             conn.UpdateAsync(alert).GetAwaiter().GetResult();

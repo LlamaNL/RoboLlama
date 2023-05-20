@@ -16,7 +16,7 @@ public class Bot : BackgroundService
     private readonly List<ChannelStatus> _channelsToJoin;
 
     private string? currentNick = null;
-    private readonly CancellationTokenSource _tokenSource = new();
+    private CancellationTokenSource _tokenSource = new();
     private string? pingMesssage = null;
     Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
     private TcpClient irc;
@@ -230,14 +230,15 @@ public class Bot : BackgroundService
         }
     }
 
-    private void EnablePlugins(StreamWriter writer)
+    private async void EnablePlugins(StreamWriter writer)
     {
         BotConsole.WriteSystemLine("Reloading Plugins");
         _pluginService.LoadPlugins(_config.PluginFolder);
         if (_tokenSource is not null)
         {
             _tokenSource.Cancel();
-            _tokenSource.TryReset();
+            await Task.Delay(2 * 1000);
+            _tokenSource = new CancellationTokenSource();
             _ = Anouncer(writer, _tokenSource.Token);
         }
         triggers = _pluginService.GetTriggerWords();
