@@ -20,7 +20,9 @@ jobs:
     - name: Backup appsettings files
       shell: pwsh
       run: |
-        Copy-Item -Path C:\RoboLlamaTest\appsettings.json -Destination C:\RoboLlamaTest\appsettings.json.bak -Force
+        if (Test-Path -Path C:\RoboLlamaTest\appsettings.json) {
+          Copy-Item -Path C:\RoboLlamaTest\appsettings.json -Destination C:\RoboLlamaTest\appsettings.json.bak -Force
+        }
         if (Test-Path -Path C:\RoboLlamaTest\appsettings.Development.json) {
           Copy-Item -Path C:\RoboLlamaTest\appsettings.Development.json -Destination C:\RoboLlamaTest\appsettings.Development.json.bak -Force
         }
@@ -29,7 +31,9 @@ jobs:
     - name: Restore appsettings files
       shell: pwsh
       run: |
-        Move-Item -Path C:\RoboLlamaTest\appsettings.json.bak -Destination C:\RoboLlamaTest\appsettings.json -Force
+        if (Test-Path -Path C:\RoboLlamaTest\appsettings.json.bak) {
+          Move-Item -Path C:\RoboLlamaTest\appsettings.json.bak -Destination C:\RoboLlamaTest\appsettings.json -Force
+        }
         if (Test-Path -Path C:\RoboLlamaTest\appsettings.Development.json.bak) {
           Move-Item -Path C:\RoboLlamaTest\appsettings.Development.json.bak -Destination C:\RoboLlamaTest\appsettings.Development.json -Force
         }
