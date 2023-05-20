@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: [self-hosted, Windows, X64, LLAMA-SERVER]
+    runs-on: [self-hosted, LLAMA-SERVER, Windows, X64]
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -17,10 +17,25 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
+    - name: Backup appsettings files
+      shell: pwsh
+      run: |
+        Copy-Item -Path C:\RoboLlamaTest\appsettings.json -Destination C:\RoboLlamaTest\appsettings.json.bak -Force
+        if (Test-Path -Path C:\RoboLlamaTest\appsettings.Development.json) {
+          Copy-Item -Path C:\RoboLlamaTest\appsettings.Development.json -Destination C:\RoboLlamaTest\appsettings.Development.json.bak -Force
+        }
     - name: Publish RoboLlama
       run: dotnet publish RoboLlama --output C:\RoboLlamaTest --configuration Release
-    - name: Publish Plugins
+    - name: Restore appsettings files
+      shell: pwsh
       run: |
-        find ./NewPlugins -name '*.csproj' -print0 | while IFS= read -r -d '' project; do
-          dotnet publish "$project" --output C:\RoboLlamaTest\Plugins --configuration Release
-        done
+        Move-Item -Path C:\RoboLlamaTest\appsettings.json.bak -Destination C:\RoboLlamaTest\appsettings.json -Force
+        if (Test-Path -Path C:\RoboLlamaTest\appsettings.Development.json.bak) {
+          Move-Item -Path C:\RoboLlamaTest\appsettings.Development.json.bak -Destination C:\RoboLlamaTest\appsettings.Development.json -Force
+        }
+    - name: Publish Plugins
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ./NewPlugins -Include *.csproj -Recurse | ForEach-Object {
+          dotnet publish $_.FullName --output C:\RoboLlamaTest\Plugins --configuration Release
+        }
