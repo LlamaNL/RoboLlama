@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -10,8 +11,17 @@ namespace WebhookReceiver.Services
 {
     public class TwitchService : ITwitchService
     {
-        private const string ClientSecret = "v0hqnfvn4fudxuahgtac2i7n4w19f7";
-        private const string ClientId = "acq63ijja0o1mtos9sh1zvt09c2174";
+        private readonly IConfiguration _config;
+
+        public TwitchService(IConfiguration config)
+        {
+            _config = config;
+            ClientId = _config.GetSection("Twitch").GetValue<string>("ClientId");
+            ClientSecret = _config.GetSection("Twitch").GetValue<string>("ClientSecret");
+        }
+
+        private readonly string ClientSecret;
+        private readonly string ClientId;
 
         private HttpClient _httpClient;
 
@@ -36,7 +46,7 @@ namespace WebhookReceiver.Services
                 new AuthenticationHeaderValue("Bearer", authtoken.AccessToken);
         }
 
-        private static async Task<AuthTokenResponse> GetAuthToken()
+        private async Task<AuthTokenResponse> GetAuthToken()
         {
             string url =
                 $"https://id.twitch.tv/oauth2/token?client_id={ClientId}&client_secret={ClientSecret}&grant_type=client_credentials";
