@@ -17,10 +17,14 @@ public class YoutubeRoboLlamaPlugin : ITriggerWordPlugin, IPluginConfig
         List<string> output = new();
         try
         {
-            string? id = GetYouTubeVideoId(input);
-            if (id is null) return output;
-            string? result = GetVideo(id);
-            if (result is not null) output.Add(result);
+            var splits = input.Split(' ');
+            foreach (var word in splits.Where(x => x.Contains("youtube.com") || x.Contains("youtu.be")))
+            {
+                string? id = GetYouTubeVideoId(word);
+                if (id is null) return output;
+                string? result = GetVideo(id);
+                if (result is not null) output.Add(result);
+            }
         }
         catch
         {
