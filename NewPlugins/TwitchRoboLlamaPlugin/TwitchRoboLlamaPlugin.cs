@@ -62,18 +62,20 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
 
     private IEnumerable<string> TwitchAdd(string input)
     {
-        string? id = GetChannelId(input).GetAwaiter().GetResult();
-        if (id is null) return new List<string> { $"[Twitch] {input} is not a channel" };
+        string channel = input.Split(' ')[1];
+        string? id = GetChannelId(channel).GetAwaiter().GetResult();
+        if (id is null) return new List<string> { $"[Twitch] {channel} is not a channel" };
         Subscribe(id).GetAwaiter().GetResult();
         return Enumerable.Empty<string>();
     }
 
     private IEnumerable<string> TwitchRemove(string input)
     {
-        string? subscriptionId = GetSubscriptionId(input).GetAwaiter().GetResult();
+        string channel = input.Split(' ')[1];
+        string? subscriptionId = GetSubscriptionId(channel).GetAwaiter().GetResult();
         if (subscriptionId is null) return new List<string>() { "Invalid subscription" };
         Unsubscribe(subscriptionId).GetAwaiter().GetResult();
-        return new List<string>() { $"Deleted {input}" };
+        return new List<string>() { $"Deleted {channel}" };
     }
 
     private List<string> TwitchSubs()
