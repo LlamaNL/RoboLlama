@@ -1,6 +1,8 @@
-﻿using RoboLlama.Infrastructure;
+﻿using Google.Apis.YouTube.v3.Data;
+using RoboLlama.Infrastructure;
 using RoboLlamaLibrary.Plugins;
 using System.Reflection;
+using System.Timers;
 
 namespace RoboLlama.Services;
 
@@ -89,5 +91,37 @@ public class PluginService : IPluginService
             }
         }
         return output;
+    }
+
+    public List<System.Timers.Timer> GetReportingTimers(StreamWriter writer, List<Models.ChannelStatus> channelsToJoin)
+    {
+        List<System.Timers.Timer> output = new();
+        foreach (object reporter in _reports)
+        {
+            IReportPlugin plugin = (reporter as IReportPlugin)!;
+            try
+            {
+                System.Timers.Timer timer = new(plugin.PreferredReportInterval.TotalMilliseconds);
+                timer.Elapsed += (sender, e) => OnTimedEvent(plugin,writer, channelsToJoin);
+                timer.AutoReset = true;
+                output.Add(timer);
+            }
+            catch (Exception e)
+            {
+                BotConsole.WriteErrorLine($"Error Getting Reports from: {plugin.GetType().Name}\n{e.Message}");
+            }
+        }
+        return output;
+    }
+
+    private static void OnTimedEvent(IReportPlugin plugin, StreamWriter writer, List<Models.ChannelStatus> channelsToJoin)
+    {
+        foreach (string report in plugin.GetLatestReports())
+        {
+            foreach (Models.ChannelStatus? channelStatus in channelsToJoin.Where(x => x.Status == "joined"))
+            {
+                writer.SayToChannel(channelStatus.Name, report).GetAwaiter().GetResult();
+            }
+        }
     }
 }

@@ -5,6 +5,8 @@ namespace OglafRoboLlamaPlugin;
 
 public class OglafRoboLlamaPlugin : IReportPlugin
 {
+    public TimeSpan PreferredReportInterval => TimeSpan.FromMinutes(5);
+
     public List<string> GetLatestReports()
     {
         RoboLlamaRssReader oglaf = new("Oglaf", "http://oglaf.com/feeds/rss/", 5);

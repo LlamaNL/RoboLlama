@@ -16,10 +16,10 @@ public class Bot : BackgroundService
     private readonly List<ChannelStatus> _channelsToJoin;
 
     private string? currentNick = null;
-    private CancellationTokenSource _tokenSource = new();
     Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
     private TcpClient? irc;
     private Timer? pingTimer;
+    List<System.Timers.Timer>? _timers;
 
     public Bot(
         IOptionsMonitor<ServerConfig> _monitor,
@@ -235,49 +235,17 @@ public class Bot : BackgroundService
         }
     }
 
-    private async void EnablePlugins(StreamWriter writer)
+    private void EnablePlugins(StreamWriter writer)
     {
         BotConsole.WriteSystemLine("Reloading Plugins");
         _pluginService.LoadPlugins(_config.PluginFolder);
-        if (_tokenSource is not null)
-        {
-            _tokenSource.Cancel();
-            await Task.Delay(2 * 1000);
-            _tokenSource = new CancellationTokenSource();
-            _ = Anouncer(writer, _tokenSource.Token);
-        }
         triggers = _pluginService.GetTriggerWords();
-    }
-
-    private async Task Anouncer(StreamWriter writer, CancellationToken stoppingToken)
-    {
-        await Task.Delay(20 * 1000, CancellationToken.None);
-        while (!stoppingToken.IsCancellationRequested)
+        _timers = _pluginService.GetReportingTimers(writer, _channelsToJoin);
+        foreach (System.Timers.Timer timer in _timers)
         {
-            try
-            {
-                foreach (string line in _pluginService.GetReports())
-                {
-                    foreach (ChannelStatus? channelStatus in _channelsToJoin.Where(x => x.Status == "joined"))
-                    {
-                        await writer.SayToChannel(channelStatus.Name, line);
-                    }
-                }
-                try
-                {
-                    await Task.Delay(1000 * 60 * 5, stoppingToken);
-                }
-                catch
-                {
-                }
-            }
-            catch
-            {
-                irc?.Close();
-            }
+            timer.Enabled = true;
         }
     }
-
     private async Task SendPingAsync(StreamWriter writer)
     {
         if (irc?.Connected == true)

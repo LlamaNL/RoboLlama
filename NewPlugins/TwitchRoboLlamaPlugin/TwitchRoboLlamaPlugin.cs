@@ -20,6 +20,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
     private string? _callbackSecret;
     private string? _callbackUrl;
 
+    public TimeSpan PreferredReportInterval => TimeSpan.FromMinutes(1);
     public List<string> GetLatestReports()
     {
         var output = new List<string>();

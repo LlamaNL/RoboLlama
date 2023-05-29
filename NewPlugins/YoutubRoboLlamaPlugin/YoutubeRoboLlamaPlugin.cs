@@ -17,8 +17,8 @@ public class YoutubeRoboLlamaPlugin : ITriggerWordPlugin, IPluginConfig
         List<string> output = new();
         try
         {
-            var splits = input.Split(' ');
-            foreach (var word in splits.Where(x => x.Contains("youtube.com") || x.Contains("youtu.be")))
+            string[] splits = input.Split(' ');
+            foreach (string? word in splits.Where(x => x.Contains("youtube.com") || x.Contains("youtu.be")))
             {
                 string? id = GetYouTubeVideoId(word);
                 if (id is null) return output;

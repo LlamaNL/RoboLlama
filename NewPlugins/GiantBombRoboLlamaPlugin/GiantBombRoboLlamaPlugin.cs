@@ -9,6 +9,8 @@ namespace GiantBombRoboLlamaPlugin;
 
 public class GiantBombRoboLlamaPlugin : IReportPlugin
 {
+    public TimeSpan PreferredReportInterval => TimeSpan.FromMinutes(5);
+
     private static string GetCast(Uri url)
     {
         using HttpClient httpClient = new();
