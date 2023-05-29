@@ -77,11 +77,11 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             string? id = GetChannelId(channel).GetAwaiter().GetResult();
             if (id is null) return new List<string> { $"[Twitch] {channel} is not a channel" };
             Subscribe(id).GetAwaiter().GetResult();
-            return new List<string>() { "Send subscribe request for {channel} to Twitch" };
+            return new List<string>() { $"[Twitch] Send subscribe request for {channel} to Twitch" };
         }
         catch
         {
-            return new List<string>() { "Invalid Prompt" };
+            return new List<string>() { "[Twitch] Invalid Prompt" };
         }
     }
 
@@ -91,19 +91,19 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         {
             string channel = input.Split(' ')[1];
             string? subscriptionId = GetSubscriptionId(channel).GetAwaiter().GetResult();
-            if (subscriptionId is null) return new List<string>() { "Invalid subscription" };
+            if (subscriptionId is null) return new List<string>() { "[Twitch] Invalid subscription" };
             Unsubscribe(subscriptionId).GetAwaiter().GetResult();
-            return new List<string>() { $"Deleted {channel}" };
+            return new List<string>() { $"[Twitch] Deleted {channel}" };
         }
         catch
         {
-            return new List<string>() { "Invalid Prompt" };
+            return new List<string>() { "[Twitch] Invalid Prompt" };
         }
     }
 
     private List<string> TwitchSubs()
     {
-        return new List<string> { string.Join(", ", GetChannels()) };
+        return new List<string> { $"[Twitch] {string.Join(", ", GetChannels())}" };
     }
 
     private async Task<HttpClient> SetupHttpClient()
@@ -117,7 +117,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return httpClient;
     }
 
-    public async Task<string?> GetSubscriptionId(string name)
+    private async Task<string?> GetSubscriptionId(string name)
     {
         SqlConnection conn = new(_connectionString);
         IEnumerable<Subscription> subscriptions = await conn.GetAllAsync<Subscription>();
@@ -126,7 +126,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return channel.SubscriptionId;
     }
 
-    public async Task<string?> GetChannelId(string name)
+    private async Task<string?> GetChannelId(string name)
     {
         HttpClient httpClient = await SetupHttpClient();
         string url = $"https://api.twitch.tv/helix/users?login={name}";
@@ -136,7 +136,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return json is not null && json?.data.Length > 0 ? json.data[0].id : null;
     }
 
-    public async Task Subscribe(string id)
+    private async Task Subscribe(string id)
     {
         HttpClient httpClient = await SetupHttpClient();
         const string url = "https://api.twitch.tv/helix/eventsub/subscriptions";
@@ -163,13 +163,13 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return sb.ToString();
     }
 
-    public async Task ResubAll()
+    private async Task ResubAll()
     {
         SqlConnection conn = new(_connectionString);
         foreach (Subscription subscription in conn.GetAll<Subscription>()) await Subscribe(subscription.ChannelId);
     }
 
-    public async Task Unsubscribe(string subscriptionId)
+    private async Task Unsubscribe(string subscriptionId)
     {
         HttpClient httpClient = await SetupHttpClient();
         string url = $"https://api.twitch.tv/helix/eventsub/subscriptions?id={subscriptionId}";
@@ -177,7 +177,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         DeleteSubscription(subscriptionId);
     }
 
-    public void SetAnnounced(string channelid)
+    private void SetAnnounced(string channelid)
     {
         const string query = "UPDATE Subscription SET Announced=1 WHERE ChannelID=@channelid";
         SqlConnection conn = new(_connectionString);
@@ -194,7 +194,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return JsonSerializer.Deserialize<AuthTokenResponse>(result);
     }
 
-    public async Task<string?> GetGame(string id)
+    private async Task<string?> GetGame(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
         HttpClient httpClient = await SetupHttpClient();
@@ -203,14 +203,14 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         return response?.Data.Count == 1 ? response.Data[0].Name : null;
     }
 
-    public IEnumerable<string> GetChannels()
+    private IEnumerable<string> GetChannels()
     {
         SqlConnection conn = new(_connectionString);
         IEnumerable<Subscription> channels = conn.GetAll<Subscription>();
         return channels.Select(x => x.ChannelName);
     }
 
-    public void DeleteSubscription(string subscriptionId)
+    private void DeleteSubscription(string subscriptionId)
     {
         SqlConnection conn = new(_connectionString);
         string query = $"SELECT TOP 1 * FROM Subscriptions WHERE SubscriptionId='{subscriptionId}'";
