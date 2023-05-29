@@ -29,7 +29,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         foreach (Subscription? subscription in conn.GetAllAsync<Subscription>().GetAwaiter().GetResult().Where(x => !x.Announced))
         {
             string? channel = subscription.ChannelName;
-            output.Add($"Subscribed to {channel}!");
+            output.Add($"[Twitch] Subscribed to {channel}!");
             subscription.Announced = true;
             conn.UpdateAsync(subscription).GetAwaiter().GetResult();
         }
