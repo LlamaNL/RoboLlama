@@ -1,7 +1,6 @@
-﻿using RoboLlamaLibrary.Plugins;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Web;
+﻿using Microsoft.Playwright;
+using RoboLlamaLibrary.Plugins;
+using System.Text;
 
 namespace TwitterRoboLlamaPlugin;
 
@@ -13,8 +12,8 @@ public class TwitterRoboLlamaPlugin : ITriggerWordPlugin, IPluginConfig
     {
         return new Dictionary<string, Func<string, IEnumerable<string>>>
         {
-            ["twitter"] = (message) => GetResponse(message),
-            ["nitter"] = (message) => GetResponse(message)
+            ["twitter"] = (message) => GetResponse(message).GetAwaiter().GetResult(),
+            ["nitter"] = (message) => GetResponse(message).GetAwaiter().GetResult()
         };
     }
 
@@ -23,50 +22,45 @@ public class TwitterRoboLlamaPlugin : ITriggerWordPlugin, IPluginConfig
         _config = config;
     }
 
-    public IEnumerable<string> GetResponse(string input)
+    public async Task<IEnumerable<string>> GetResponse(string input)
     {
-        List<string> output = new();
         try
         {
-            string? result = Parse(input);
-            if (result is not null) output.AddRange(result.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+            using IPlaywright playwright = await Playwright.CreateAsync();
+            await using IBrowser browser = await playwright.Chromium.LaunchAsync();
+
+            // Navigate to the page
+            string url = input; // Replace with the URL you want to scrape (ensure it is allowed)
+            IPage page = await browser.NewPageAsync();
+            await page.GotoAsync(url);
+
+            // Wait for the specific element to be loaded
+            await page.WaitForSelectorAsync("div[data-testid='tweetText']");
+
+            // Select the first div with the specific data-testid attribute
+            var firstDiv = await page.QuerySelectorAsync("div[data-testid='tweetText']");
+
+            // Use JavaScript to extract content and URLs in order
+            string result = await page.EvalOnSelectorAsync<string>("div[data-testid='tweetText']", @"(div) => {
+                let content = '';
+                let nodes = div.childNodes;
+                for (let node of nodes) {
+                    if (node.nodeName === 'SPAN') {
+                        content += node.innerText + ' ';
+                    } else if (node.nodeName === 'A') {
+                        content += node.innerText + ' ';
+                    }
+                }
+                return content.trim();
+            }");
+
+            await browser.CloseAsync();
+            var output = "[Tweet] " + result.Replace("\n", "").Replace("\r", "").Trim();
+            return new List<string>() { output };
         }
         catch
         {
-            // do nothing;
-        }
-
-        return output;
-    }
-
-    private string? Parse(string tweet)
-    {
-        Regex regex = new(@"(twitter|nitter)\.(com|net)\/.*\/status(?:es)?\/([^\/\?]+)",
-            RegexOptions.IgnoreCase);
-        Match match = regex.Match(tweet);
-        if (!match.Success) return null;
-        string id = match.Groups[3].Value;
-
-        using HttpClient httpClient = new();
-        if (_config is null) return null;
-        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + _config["BearerToken"]);
-        try
-        {
-            string url = $"https://api.twitter.com/2/tweets?ids={id}";
-            HttpResponseMessage response = httpClient.GetAsync(new Uri(url)).GetAwaiter().GetResult();
-            string content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            if (response.IsSuccessStatusCode)
-            {
-                TwitterResponse result = JsonSerializer.Deserialize<TwitterResponse>(content)!;
-                string text = HttpUtility.HtmlDecode(result.data[0].text);
-                return $"[Tweet] {text}";
-            }
-
-            return null;
-        }
-        catch (HttpRequestException)
-        {
-            return null;
+            return Enumerable.Empty<string>();
         }
     }
 }
