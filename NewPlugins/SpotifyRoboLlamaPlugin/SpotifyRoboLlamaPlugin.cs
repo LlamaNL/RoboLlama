@@ -11,8 +11,11 @@ public class SpotifyRoboLlamaPlugin : ITriggerWordPlugin
         List<string> output = new();
         try
         {
-            string? result = Parse(input);
-            if (result is not null) output.Add($"[Spotify] {result}");
+            foreach (var section in input.Split(' '))
+            {
+                string? result = Parse(section);
+                if (result is not null) output.Add($"[Spotify] {result}");
+            }
         }
         catch
         {

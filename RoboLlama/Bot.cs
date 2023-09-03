@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
 using RoboLlama.Infrastructure;
 using RoboLlama.Models;
 using RoboLlama.Services;
@@ -14,27 +13,31 @@ public class Bot : BackgroundService
     private readonly ServerConfig _config;
     private readonly IrcConnectionPolicy _connectionPolicy = new(20, 10);
     private readonly List<ChannelStatus> _channelsToJoin;
-
     private string? currentNick = null;
     Dictionary<string, Func<string, IEnumerable<string>>> triggers = new();
     private TcpClient? irc;
     private Timer? pingTimer;
     List<System.Timers.Timer>? _timers;
-
+    private bool _reconnecting;
     public Bot(
         IOptionsMonitor<ServerConfig> _monitor,
-        IPluginService pluginService)
+        IPluginService pluginService,
+        ILogger<Bot> logger)
     {
         _config = _monitor.CurrentValue;
         _channelsToJoin = _config.Channels.Select(x => new ChannelStatus(x, "unjoined")).ToList();
         _pluginService = pluginService;
+        BotConsole.Logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await _connectionPolicy.ConnectWithRetriesAsync(async () => await RunBot(stoppingToken));
+            await _connectionPolicy.ConnectWithRetriesAsync(async () =>
+            {
+                await RunBot(stoppingToken);
+            });
         }
     }
 
@@ -90,6 +93,12 @@ public class Bot : BackgroundService
                 {
                     await writer.SendRawLineAsync(inputLine.Replace("PING", "PONG"));
                     continue;
+                }
+
+                if (_reconnecting)
+                {
+                    EnablePlugins(writer);
+                    _reconnecting = false;
                 }
 
                 string[] splitInput = inputLine.Split(' ');
@@ -193,10 +202,17 @@ public class Bot : BackgroundService
                                 }
                                 foreach (KeyValuePair<string, Func<string, IEnumerable<string>>> trigger in triggers)
                                 {
-                                    if (!userMessage.Contains(trigger.Key, StringComparison.OrdinalIgnoreCase)) continue;
-                                    foreach (string answer in trigger.Value(userMessage))
+                                    try
                                     {
-                                        await writer.SayToChannel(channel, answer);
+                                        if (!userMessage.Contains(trigger.Key, StringComparison.OrdinalIgnoreCase)) continue;
+                                        foreach (string answer in trigger.Value(userMessage))
+                                        {
+                                            await writer.SayToChannel(channel, answer);
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        BotConsole.WriteErrorLine(e.Message);
                                     }
                                 }
                                 break;
@@ -208,6 +224,7 @@ public class Bot : BackgroundService
         catch (OperationCanceledException ex)
         {
             BotConsole.WriteSystemLine("Received signal to terminate program: " + ex.Message);
+            Environment.Exit(0);
         }
         catch (SocketException ex)
         {
@@ -232,6 +249,7 @@ public class Bot : BackgroundService
         finally
         {
             pingTimer?.Dispose();
+            _reconnecting = true;
         }
     }
 

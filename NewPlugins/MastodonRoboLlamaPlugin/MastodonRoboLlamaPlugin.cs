@@ -20,24 +20,28 @@ public class MastodonRoboLlamaPlugin : ITriggerWordPlugin
         try
         {
             //https://toot.community/@RapidOffensiveUnit@mastodonapp.uk/109884859812195397
-            string[] splits = input.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (!IsDigitsOnly(splits[3]))
+            string[] spaceSplit = input.Split(' ');
+            foreach (var space in spaceSplit)
             {
-                return output;
+                string[] splits = space.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (!IsDigitsOnly(splits[3]))
+                {
+                    return output;
+                }
+                string url = $"https://{splits[1]}/api/v1/statuses/{splits[3]}";
+                HttpClient httpClient = new();
+                HttpResponseMessage response = httpClient.GetAsync(url).GetAwaiter().GetResult();
+                if (!response.IsSuccessStatusCode)
+                {
+                    return output;
+                }
+                string content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                MastodonResponse mastodonResponse = JsonSerializer.Deserialize<MastodonResponse>(content)!;
+                string mastodonContent = "[Mastodon] " + mastodonResponse.content.Replace("<p>", "").Replace("</p>", "\n");
+                mastodonContent = StripHTML(mastodonContent);
+                output.AddRange(mastodonContent.Split('\n'));
+                output.AddRange(mastodonResponse.media_attachments.Select(x => x.url));
             }
-            string url = $"https://{splits[1]}/api/v1/statuses/{splits[3]}";
-            HttpClient httpClient = new();
-            HttpResponseMessage response = httpClient.GetAsync(url).GetAwaiter().GetResult();
-            if (!response.IsSuccessStatusCode)
-            {
-                return output;
-            }
-            string content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            MastodonResponse mastodonResponse = JsonSerializer.Deserialize<MastodonResponse>(content)!;
-            string mastodonContent = "[Mastodon] " + mastodonResponse.content.Replace("<p>", "").Replace("</p>", "\n");
-            mastodonContent = StripHTML(mastodonContent);
-            output.AddRange(mastodonContent.Split('\n'));
-            output.AddRange(mastodonResponse.media_attachments.Select(x => x.url));
         }
         catch
         {

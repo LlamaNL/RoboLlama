@@ -24,5 +24,7 @@ public static class Extensions
         await SendRawLineAsync(stream, message);
     }
 
-    public static Dictionary<string, string?> ToDictionary(this IConfigurationSection section) => section.GetChildren().ToDictionary(x => x.Key, x => x.Value);
+    public static Dictionary<string, string?> ToDictionary(this IConfigurationSection section) => section
+        .GetChildren()
+        .ToDictionary(x => x.Key, x => x.Value);
 }

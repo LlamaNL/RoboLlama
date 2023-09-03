@@ -2,6 +2,8 @@
 
 public static class BotConsole
 {
+    public static ILogger<Bot>? Logger;
+
     public static void WriteLine(string message)
     {
         Console.ForegroundColor = ConsoleColor.White;
@@ -13,6 +15,7 @@ public static class BotConsole
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(message);
+        Logger.LogError(message);
         Console.ResetColor();
     }
 
@@ -20,6 +23,7 @@ public static class BotConsole
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine(message);
+        Logger.LogInformation(message);
         Console.ResetColor();
     }
 }

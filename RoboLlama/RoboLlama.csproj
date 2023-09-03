@@ -10,21 +10,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.35.0" />
     <PackageReference Include="Polly" Version="7.2.3" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NewPlugins\GiantBombRoboLlamaPlugin\GiantBombRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\MastodonRoboLlamaPlugin\MastodonRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\OglafRoboLlamaPlugin\OglafRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\SpotifyRoboLlamaPlugin\SpotifyRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\TwitchRoboLlamaPlugin\TwitchRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\TwitterRoboLlamaPlugin\TwitterRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\UrbanDictionaryRoboLlamaPlugin\UrbanDictionaryRoboLlamaPlugin.csproj" />
-    <ProjectReference Include="..\NewPlugins\YoutubRoboLlamaPlugin\YoutubeRoboLlamaPlugin.csproj" />
     <ProjectReference Include="..\RoboLlamaLibrary\RoboLlamaLibrary.csproj" />
-    <ProjectReference Include="..\RoboLlamaRSSReader\RoboLlamaRSSReader.csproj" />
   </ItemGroup>
 
   <ItemGroup>

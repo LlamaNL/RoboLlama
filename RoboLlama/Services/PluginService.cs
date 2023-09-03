@@ -1,8 +1,8 @@
-﻿using Google.Apis.YouTube.v3.Data;
+﻿using Polly;
 using RoboLlama.Infrastructure;
 using RoboLlamaLibrary.Plugins;
 using System.Reflection;
-using System.Timers;
+using System.Runtime.Loader;
 
 namespace RoboLlama.Services;
 
@@ -12,6 +12,8 @@ public class PluginService : IPluginService
     private readonly List<object> _reports = new();
     private readonly IConfiguration _config;
     private readonly List<object> _pluginInstances = new();
+    private readonly Dictionary<string, AssemblyLoadContext> assemblyLoadContexts = new();
+
     public PluginService(IConfiguration config)
     {
         _config = config;
@@ -33,7 +35,19 @@ public class PluginService : IPluginService
         // Now pluginFiles contains all files in the folder that end with "RoboLlamaPlugin.dll"
         foreach (string file in pluginFiles)
         {
-            Assembly pluginAssembly = Assembly.LoadFile(file);
+            var assemblyLoadContext = new AssemblyLoadContext(file, true);
+            assemblyLoadContext.Resolving += (AssemblyLoadContext loadContext, AssemblyName assemblyName) =>
+            {
+                // Try to locate the missing assembly in the plugin directory
+                string assemblyPath = Path.Combine(pluginDirectory, $"{assemblyName.Name}.dll");
+                if (File.Exists(assemblyPath))
+                {
+                    return loadContext.LoadFromAssemblyPath(assemblyPath);
+                }
+                return null;
+            };
+            assemblyLoadContexts.Add(file, assemblyLoadContext);
+            Assembly pluginAssembly = assemblyLoadContext.LoadFromAssemblyPath(file);
             foreach (Type type in pluginAssembly.GetTypes())
             {
                 object plugin = null!;
@@ -101,6 +115,7 @@ public class PluginService : IPluginService
             IReportPlugin plugin = (reporter as IReportPlugin)!;
             try
             {
+                OnTimedEvent(plugin, writer, channelsToJoin);
                 System.Timers.Timer timer = new(plugin.PreferredReportInterval.TotalMilliseconds);
                 timer.Elapsed += (sender, e) => OnTimedEvent(plugin,writer, channelsToJoin);
                 timer.AutoReset = true;
