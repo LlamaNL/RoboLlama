@@ -42,7 +42,7 @@ jobs:
       shell: pwsh
       run: |
         Get-ChildItem -Path ./NewPlugins -Include *.csproj -Recurse | ForEach-Object {
-          dotnet publish $_.FullName --output C:\RoboLlama\Plugins --configuration Release --runtime win-x64 --self-contained true -r win-x64
+          dotnet publish $_.FullName --output C:\RoboLlama\Plugins --configuration Release --self-contained true -r win-x64
         }
     - name: Register and start RoboLlama service
       shell: pwsh
