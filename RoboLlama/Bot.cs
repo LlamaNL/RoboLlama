@@ -257,7 +257,7 @@ public class Bot : BackgroundService
     private void EnablePlugins(StreamWriter writer)
     {
         BotConsole.WriteSystemLine("Reloading Plugins");
-        _pluginService.LoadPlugins(_config.PluginFolder);
+        _pluginService.LoadPlugins(_config.PluginFolder, _config.Root);
         triggers = _pluginService.GetTriggerWords();
         _timers = _pluginService.GetReportingTimers(writer, _channelsToJoin);
         foreach (System.Timers.Timer timer in _timers)

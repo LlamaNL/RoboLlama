@@ -19,7 +19,7 @@ public class PluginService : IPluginService
         _config = config;
     }
 
-    public void LoadPlugins(string pluginDirectory)
+    public void LoadPlugins(string pluginDirectory, string rootDirectory)
     {
         // clear in case this is ran for a second time
         _reports.Clear();
@@ -40,6 +40,10 @@ public class PluginService : IPluginService
             {
                 // Try to locate the missing assembly in the plugin directory
                 string assemblyPath = Path.Combine(pluginDirectory, $"{assemblyName.Name}.dll");
+                if (assemblyName.Name == "Microsoft.Data.SqlClient")
+                {
+                    assemblyPath = Path.Combine(rootDirectory, "Microsoft.Data.SqlClient.dll");
+                }
                 if (File.Exists(assemblyPath))
                 {
                     return loadContext.LoadFromAssemblyPath(assemblyPath);
