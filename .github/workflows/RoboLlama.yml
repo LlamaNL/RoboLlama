@@ -31,7 +31,7 @@ jobs:
           Stop-Service -Name "RoboLlama"
         }
     - name: Publish RoboLlama
-      run: dotnet publish RoboLlama --output C:\RoboLlama --configuration Release
+      run: dotnet publish RoboLlama --output C:\RoboLlama --configuration Release --runtime win-x64
     - name: Restore JSON files
       shell: pwsh
       run: |
@@ -42,7 +42,7 @@ jobs:
       shell: pwsh
       run: |
         Get-ChildItem -Path ./NewPlugins -Include *.csproj -Recurse | ForEach-Object {
-          dotnet publish $_.FullName --output C:\RoboLlama\Plugins --configuration Release
+          dotnet publish $_.FullName --output C:\RoboLlama\Plugins --configuration Release --runtime win-x64
         }
     - name: Register and start RoboLlama service
       shell: pwsh
