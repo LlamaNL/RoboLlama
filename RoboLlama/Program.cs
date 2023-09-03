@@ -24,7 +24,6 @@ builder.ConfigureServices((context, services) =>
     services.AddHostedService<Bot>();
     services.AddWindowsService(options => options.ServiceName = "RoboLlama");
 });
-
 IHost host = builder
 .UseSerilog()
 .Build();

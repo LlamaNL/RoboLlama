@@ -25,6 +25,7 @@ public class Bot : BackgroundService
         ILogger<Bot> logger)
     {
         _config = _monitor.CurrentValue;
+        Directory.SetCurrentDirectory(_config.Root);
         _channelsToJoin = _config.Channels.Select(x => new ChannelStatus(x, "unjoined")).ToList();
         _pluginService = pluginService;
         BotConsole.Logger = logger;

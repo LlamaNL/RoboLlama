@@ -12,4 +12,5 @@ public class ServerConfig
     public string[] Nicks { get; set; }
     public string AdminNick { get; set; }
     public string PluginFolder { get; set; }
+    public string Root { get; set; }
 }
