@@ -50,7 +50,7 @@ public class PluginService : IPluginService
                 }
                 return null;
             };
-            assemblyLoadContexts.Add(file, assemblyLoadContext);
+            assemblyLoadContexts[file] = assemblyLoadContext;
             Assembly pluginAssembly = assemblyLoadContext.LoadFromAssemblyPath(file);
             foreach (Type type in pluginAssembly.GetTypes())
             {
@@ -121,7 +121,7 @@ public class PluginService : IPluginService
             {
                 OnTimedEvent(plugin, writer, channelsToJoin);
                 System.Timers.Timer timer = new(plugin.PreferredReportInterval.TotalMilliseconds);
-                timer.Elapsed += (sender, e) => OnTimedEvent(plugin,writer, channelsToJoin);
+                timer.Elapsed += (sender, e) => OnTimedEvent(plugin, writer, channelsToJoin);
                 timer.AutoReset = true;
                 output.Add(timer);
             }

@@ -265,6 +265,7 @@ public class Bot : BackgroundService
             timer.Enabled = true;
         }
     }
+
     private async Task SendPingAsync(StreamWriter writer)
     {
         if (irc?.Connected == true)
