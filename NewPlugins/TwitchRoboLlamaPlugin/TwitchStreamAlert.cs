@@ -19,4 +19,6 @@ public class TwitchStreamAlert
     public string ChannelId { get; set; }
 
     public bool Announced { get; set; }
+
+    public bool TitleChanged { get; set; }
 }

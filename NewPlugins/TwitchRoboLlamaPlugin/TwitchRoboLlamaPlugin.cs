@@ -46,6 +46,19 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             alert.Announced = true;
             conn.UpdateAsync(alert).GetAwaiter().GetResult();
         }
+        foreach (TwitchStreamAlert alert in conn.GetAllAsync<TwitchStreamAlert>().GetAwaiter().GetResult().Where(alert => !alert.Announced))
+        {
+            string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
+            StringBuilder sb = new();
+            sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet,
+                IrcColor.Black));
+            sb.Append(" - ").Append(alert.Title.Replace("\n", "")).Append(" - ");
+            if (game != null) sb.Append(game);
+            sb.Append(" - Title Updated");
+            output.Add(sb.ToString());
+            alert.Announced = false;
+            conn.UpdateAsync(alert).GetAwaiter().GetResult();
+        }
         return output;
     }
 
@@ -55,7 +68,8 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         {
             ["!twitchadd"] = (message) => TwitchAdd(message),
             ["!twitchremove"] = (message) => TwitchRemove(message),
-            ["!twitchsubs"] = (_) => TwitchSubs()
+            ["!twitchsubs"] = (_) => TwitchSubs(),
+            ["!resub"] = (_) => { ResubAll().GetAwaiter().GetResult(); return new List<string>() { "[Twitch] Resubbed all channels" }; }
         };
     }
 
@@ -143,6 +157,8 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
 
         using StringContent stringcontent = new(CreateSubscribeRequest(id), Encoding.UTF8, "application/json");
         await httpClient.PostAsync(new Uri(url), stringcontent);
+        using StringContent stringcontent2 = new(CreateSubscribeChannelTitleRequest(id), Encoding.UTF8, "application/json");
+        await httpClient.PostAsync(new Uri(url), stringcontent2);
     }
 
     private string CreateSubscribeRequest(string id)
@@ -151,6 +167,24 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         sb.AppendLine("{");
         sb.AppendLine(@"    ""type"": ""stream.online"",");
         sb.AppendLine(@"    ""version"": ""1"",");
+        sb.AppendLine(@"    ""condition"": {");
+        sb.Append(@"        ""broadcaster_user_id"": """).Append(id).AppendLine(@"""");
+        sb.AppendLine("    },");
+        sb.AppendLine(@"    ""transport"": {");
+        sb.AppendLine(@"        ""method"": ""webhook"",");
+        sb.Append(@"        ""callback"": """).Append(_callbackUrl).AppendLine(@""",");
+        sb.Append(@"        ""secret"": """).Append(_callbackSecret).AppendLine(@"""");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
+        return sb.ToString();
+    }
+
+    private string CreateSubscribeChannelTitleRequest(string id)
+    {
+        StringBuilder sb = new();
+        sb.AppendLine("{");
+        sb.AppendLine(@"    ""type"": ""channel.update"",");
+        sb.AppendLine(@"    ""version"": ""2"",");
         sb.AppendLine(@"    ""condition"": {");
         sb.Append(@"        ""broadcaster_user_id"": """).Append(id).AppendLine(@"""");
         sb.AppendLine("    },");
