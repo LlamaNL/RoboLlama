@@ -5,6 +5,6 @@ namespace WebhookReceiver.Services
 {
     public interface IAlertService
     {
-        Task<HttpStatusCode> ProcessAlert(string id);
+        Task<HttpStatusCode> ProcessAlert(string id, bool titleChanged);
     }
 }

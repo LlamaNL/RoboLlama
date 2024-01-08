@@ -36,7 +36,7 @@ namespace WebhookReceiver.Controllers
                 return code == HttpStatusCode.OK ? Ok(body) : BadRequest();
             }
 
-            HttpStatusCode processResponse = await _alertService.ProcessAlert(response.Subscription.Condition.BroadcasterUserId);
+            HttpStatusCode processResponse = await _alertService.ProcessAlert(response.Subscription.Condition.BroadcasterUserId, response.Subscription.Type == "channel.update");
             if (processResponse == HttpStatusCode.OK) return Ok();
             return BadRequest();
         }

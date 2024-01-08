@@ -18,17 +18,18 @@ namespace WebhookReceiver.Services
             _twitchService = twitchService;
         }
 
-        public async Task<HttpStatusCode> ProcessAlert(string id)
+        public async Task<HttpStatusCode> ProcessAlert(string id, bool titleChanged)
         {
             ChannelData channel = await _twitchService.GetChannelData(id);
             TwitchStreamAlertDto record = new()
             {
-                Announced = false,
+                Announced = titleChanged,
                 UserName = channel.BroadcasterName,
                 Title = channel.Title,
                 ViewerCount = 0,
                 GameId = channel.GameId,
-                ChannelId = id
+                ChannelId = id,
+                TitleChanged = titleChanged
             };
 
             await _alertRepository.Upsert(record);

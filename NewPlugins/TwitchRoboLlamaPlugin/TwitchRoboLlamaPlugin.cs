@@ -46,7 +46,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             alert.Announced = true;
             conn.UpdateAsync(alert).GetAwaiter().GetResult();
         }
-        foreach (TwitchStreamAlert alert in conn.GetAllAsync<TwitchStreamAlert>().GetAwaiter().GetResult().Where(alert => !alert.Announced))
+        foreach (TwitchStreamAlert alert in conn.GetAllAsync<TwitchStreamAlert>().GetAwaiter().GetResult().Where(alert => alert.TitleChanged))
         {
             string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
             StringBuilder sb = new();
@@ -56,7 +56,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             if (game != null) sb.Append(game);
             sb.Append(" - Title Updated");
             output.Add(sb.ToString());
-            alert.Announced = false;
+            alert.TitleChanged = false;
             conn.UpdateAsync(alert).GetAwaiter().GetResult();
         }
         return output;
