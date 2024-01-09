@@ -48,6 +48,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         }
         foreach (TwitchStreamAlert alert in conn.GetAllAsync<TwitchStreamAlert>().GetAwaiter().GetResult().Where(alert => alert.TitleChanged))
         {
+            if (!CheckOnline(alert.ChannelId).GetAwaiter().GetResult()) continue;
             string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
             StringBuilder sb = new();
             sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet,
@@ -235,6 +236,15 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         string url = $"https://api.twitch.tv/helix/games?id={id}";
         GameDataResponse? response = await httpClient.GetFromJsonAsync<GameDataResponse>(new Uri(url));
         return response?.Data.Count == 1 ? response.Data[0].Name : null;
+    }
+
+    private async Task<bool> CheckOnline(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return false;
+        HttpClient httpClient = await SetupHttpClient();
+        string url = $"https://api.twitch.tv/helix/streams?user_id={id}";
+        GameDataResponse? response = await httpClient.GetFromJsonAsync<GameDataResponse>(new Uri(url));
+        return response?.Data.Count == 1;
     }
 
     private IEnumerable<string> GetChannels()
