@@ -39,7 +39,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             StringBuilder sb = new();
             sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
             sb.Append(" - ").Append(alert.Title.Replace("\n", ""));
-            if (game is not null && !alert.Title.Contains(game))
+            if (game is not null && !alert.Title.Contains(game, StringComparison.OrdinalIgnoreCase))
             {
                 sb.Append(" - ").Append(game);
             }
@@ -56,7 +56,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
                 StringBuilder sb = new();
                 sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
                 sb.Append(" - ").Append(alert.Title.Replace("\n", ""));
-                if (game is not null && !alert.Title.Contains(game))
+                if (game is not null && !alert.Title.Contains(game, StringComparison.OrdinalIgnoreCase))
                 {
                     sb.Append(" - ").Append(game);
                 }
