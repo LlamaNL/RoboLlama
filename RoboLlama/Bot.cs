@@ -35,10 +35,7 @@ public class Bot : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await _connectionPolicy.ConnectWithRetriesAsync(async () =>
-            {
-                await RunBot(stoppingToken);
-            });
+            await _connectionPolicy.ConnectWithRetriesAsync(async () => await RunBot(stoppingToken));
         }
     }
 
@@ -68,9 +65,9 @@ public class Bot : BackgroundService
 #pragma warning restore CA1416 // Validate platform compatibility
             await irc.ConnectAsync(_config.ServerAddress, _config.ServerPort);
 
-            using NetworkStream stream = irc.GetStream();
+            await using NetworkStream stream = irc.GetStream();
             using StreamReader reader = new(stream);
-            using StreamWriter writer = new(stream) { NewLine = "\r\n", AutoFlush = true };
+            await using StreamWriter writer = new(stream) { NewLine = "\r\n", AutoFlush = true };
 
             pingTimer = new Timer(async _ => await SendPingAsync(writer), null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 

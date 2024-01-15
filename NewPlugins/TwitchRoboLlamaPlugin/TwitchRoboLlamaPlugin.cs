@@ -37,8 +37,7 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         {
             string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
             StringBuilder sb = new();
-            sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet,
-                IrcColor.Black));
+            sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
             sb.Append(" - ").Append(alert.Title.Replace("\n", "")).Append(" - ");
             if (game != null) sb.Append(game);
             sb.Append(" - LIVE");
@@ -52,11 +51,10 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
             {
                 string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
                 StringBuilder sb = new();
-                sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet,
-                    IrcColor.Black));
+                sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
                 sb.Append(" - ").Append(alert.Title.Replace("\n", "")).Append(" - ");
                 if (game != null) sb.Append(game);
-                sb.Append(" - Title Updated");
+                sb.Append(" - Channel Update");
                 output.Add(sb.ToString());
             }
             alert.TitleChanged = false;
@@ -212,13 +210,6 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         string url = $"https://api.twitch.tv/helix/eventsub/subscriptions?id={subscriptionId}";
         _ = await httpClient.DeleteAsync(url);
         DeleteSubscription(subscriptionId);
-    }
-
-    private void SetAnnounced(string channelid)
-    {
-        const string query = "UPDATE Subscription SET Announced=1 WHERE ChannelID=@channelid";
-        SqlConnection conn = new(_connectionString);
-        conn.Execute(query, new { channelid });
     }
 
     private async Task<AuthTokenResponse?> GetAuthToken()

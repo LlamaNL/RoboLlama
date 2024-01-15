@@ -10,7 +10,7 @@ public class UrbanDictionaryRoboLlamaPlugin : ITriggerWordPlugin
         List<string> output = new();
         try
         {
-            string searchTerm = input.Substring(4);
+            string searchTerm = input[4..];
             UrbanDictionaryResult? result = GetFirstOrDefaultResult(searchTerm);
             if (result is not null) output.Add($"[UrbanDictionary] {result.Definition} - Example: {result.Example}");
         }

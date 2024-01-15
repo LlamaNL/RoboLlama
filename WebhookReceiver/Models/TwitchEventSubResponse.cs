@@ -57,7 +57,6 @@ namespace WebhookReceiver.Models
 //     }
 // }
 
-
     public class TwitchEventSubResponse
     {
         [JsonPropertyName("challenge")]

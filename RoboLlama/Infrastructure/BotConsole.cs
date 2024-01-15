@@ -2,7 +2,7 @@
 
 public static class BotConsole
 {
-    public static ILogger<Bot>? Logger;
+    public static ILogger<Bot>? Logger { get; set; }
 
     public static void WriteLine(string message)
     {
@@ -15,7 +15,7 @@ public static class BotConsole
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine(message);
-        Logger.LogError(message);
+        Logger?.LogError("{message}", message);
         Console.ResetColor();
     }
 
@@ -23,7 +23,7 @@ public static class BotConsole
     {
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine(message);
-        Logger.LogInformation(message);
+        Logger?.LogError("{message}", message);
         Console.ResetColor();
     }
 }
