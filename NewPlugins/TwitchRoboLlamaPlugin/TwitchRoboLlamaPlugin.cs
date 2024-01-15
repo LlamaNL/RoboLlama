@@ -35,9 +35,14 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         }
         foreach (TwitchStreamAlert alert in conn.GetAllAsync<TwitchStreamAlert>().GetAwaiter().GetResult().Where(alert => !alert.Announced))
         {
+            string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
             StringBuilder sb = new();
             sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
             sb.Append(" - ").Append(alert.Title.Replace("\n", ""));
+            if (game is not null && !alert.Title.Contains(game))
+            {
+                sb.Append(" - ").Append(game);
+            }
             sb.Append(" - LIVE");
             output.Add(sb.ToString());
             alert.Announced = true;
@@ -47,9 +52,14 @@ public class TwitchRoboLlamaPlugin : ITriggerWordPlugin, IReportPlugin, IPluginC
         {
             if (CheckOnline(alert.ChannelId).GetAwaiter().GetResult())
             {
+                string? game = GetGame(alert.GameId).GetAwaiter().GetResult();
                 StringBuilder sb = new();
                 sb.Append($"[https://www.twitch.tv/{alert.UserName}]".ColorFormat(IrcColor.Violet, null!));
                 sb.Append(" - ").Append(alert.Title.Replace("\n", ""));
+                if (game is not null && !alert.Title.Contains(game))
+                {
+                    sb.Append(" - ").Append(game);
+                }
                 sb.Append(" - Channel Update");
                 output.Add(sb.ToString());
             }
