@@ -11,5 +11,6 @@ namespace WebhookReceiver.Models.DTOs
         public string ChannelName { get; set; }
 
         public string SubscriptionId { get; set; }
+        public string UpdateId { get; set; }
     }
 }

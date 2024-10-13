@@ -17,4 +17,5 @@ public class Subscription
 
     public bool Announced { get; set; }
     public string SubscriptionId { get; set; }
+    public string UpdateId { get; set; }
 }

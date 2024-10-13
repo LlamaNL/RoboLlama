@@ -65,7 +65,9 @@ public class YoutubeRoboLlamaPlugin : ITriggerWordPlugin, IPluginConfig
         Google.Apis.YouTube.v3.Data.Video video = result.Items[0];
         string author = video.Snippet.ChannelTitle;
         string title = video.Localizations?.ContainsKey("en") == true ? video.Localizations["en"].Title : video.Snippet.Title;
-        TimeSpan duration = XmlConvert.ToTimeSpan(result.Items[0].ContentDetails.Duration);
+        var timespan = result.Items[0]?.ContentDetails?.Duration;
+        timespan ??= "PT0S";
+        TimeSpan duration = XmlConvert.ToTimeSpan(timespan);
         LiveStreamState liveStream = (LiveStreamState)Enum.Parse(typeof(LiveStreamState),
             result.Items[0].Snippet.LiveBroadcastContent, true);
 

@@ -2,7 +2,9 @@
 using RoboLlama.Infrastructure;
 using RoboLlamaLibrary.Plugins;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using System.Timers;
 
 namespace RoboLlama.Services;
 
@@ -13,8 +15,8 @@ public class PluginService : IPluginService
     private readonly IConfiguration _config;
     private readonly List<object> _pluginInstances = new();
     private readonly Dictionary<string, AssemblyLoadContext> assemblyLoadContexts = new();
-
-    public PluginService(IConfiguration config)
+	private ElapsedEventHandler? _timerElapsedHandler;
+	public PluginService(IConfiguration config)
     {
         _config = config;
     }
@@ -121,8 +123,10 @@ public class PluginService : IPluginService
             {
                 OnTimedEvent(plugin, writer, channelsToJoin);
                 System.Timers.Timer timer = new(plugin.PreferredReportInterval.TotalMilliseconds);
-                timer.Elapsed += (sender, e) => OnTimedEvent(plugin, writer, channelsToJoin);
-                timer.AutoReset = true;
+				_timerElapsedHandler ??= (sender, e) => OnTimedEvent(plugin, writer, channelsToJoin);
+                timer.Elapsed -= _timerElapsedHandler;
+                timer.Elapsed += _timerElapsedHandler;
+				timer.AutoReset = true;
                 output.Add(timer);
             }
             catch (Exception e)

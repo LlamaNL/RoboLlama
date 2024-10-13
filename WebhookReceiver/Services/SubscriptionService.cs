@@ -23,10 +23,19 @@ namespace WebhookReceiver.Services
             SubscriptionDto subscription = new()
             {
                 ChannelId = response.Subscription.Condition.BroadcasterUserId,
-                RegistryDate = DateTime.Now,
-                SubscriptionId = response.Subscription.Id
+                RegistryDate = DateTime.Now,                
             };
-            await _subscriptionRepository.Upsert(subscription);
+
+			if (response.Subscription.Type == "channel.update")
+			{
+                subscription.UpdateId = response.Subscription.Id;
+			}
+            else
+            {
+                subscription.SubscriptionId = response.Subscription.Id;
+			}
+
+			await _subscriptionRepository.Upsert(subscription);
             return (HttpStatusCode.OK, response.Challenge);
         }
     }

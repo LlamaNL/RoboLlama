@@ -14,12 +14,6 @@ namespace WebhookReceiver
 
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>().UseIISIntegration())
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-                    logging.AddDebug();
-                })
                 .Build()
                 .Run();
         }
